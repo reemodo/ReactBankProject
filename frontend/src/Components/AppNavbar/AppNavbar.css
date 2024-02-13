@@ -1,0 +1,37 @@
+.navbar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start; /* align navbar to the left */
+    padding: 0 16px 16px;
+    background-color: rgb(190 239 239 / 43%);
+    width: 100%;
+    box-shadow:2px 2px 4px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .navbar a {
+    margin-top: 10px;
+    margin-left: 10px;
+    text-decoration: none;
+    margin-right: 16px;
+    font-weight: 500;
+    font-size: 20px;
+    font-family: serif;
+    float: left;
+    color: #0c4f71;
+  }
+  .navbar a {
+    font-size: 25px;
+  }
+  .balance{
+    font-weight: 600;
+    display: inline-flex;
+    margin-left: auto;
+    font-size: 20px;
+    font-family: serif;
+    margin-right: 30px;
+    color: #0c4f71;
+    margin-top: 10px;
+  }
+  .red{
+    color: #c83351;
+  }

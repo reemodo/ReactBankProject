@@ -1,0 +1,20 @@
+#root{
+  height: 100%;
+  width: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  overflow: auto; /* add this */
+}
+
+#about{
+  text-align: center;
+  font-size: 30px;
+  color:#0c4f71;
+  font-family: serif;
+  text-shadow: 0 0 3px #f5fe7c, 0 0 5px #1e1e80;
+}
