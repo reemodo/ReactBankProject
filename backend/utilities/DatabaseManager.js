@@ -5,18 +5,18 @@ class Database {
         //TODO: move the URL To const in config or fo with env
         mongoose.connect("mongodb://127.0.0.1:27017/bankDB", {}).catch((err)=> console.log(err))
     }
-    static findAllTransactions(){
-        return Transaction.find({})
+    static async findAllTransactions(){
+        return await Transaction.find({})
     }
     static async addNewTransaction(newTransactionData){
         const newTransaction = new Transaction(newTransactionData)
         return await newTransaction.save()
     }
-    static deleteTransactionById(transactionId){
-        return Transaction.findOneAndDelete( {_id: transactionId } )
+    static async deleteTransactionById(transactionId){
+        return await Transaction.findOneAndDelete( {_id: transactionId } )
     }
-    static breakdownSumByCategory (){
-        return Transaction.aggregate([{$group: {
+    static async breakdownSumByCategory (){
+        return await Transaction.aggregate([{$group: {
             _id: "$category",
             totalAmount: {
               $sum: {

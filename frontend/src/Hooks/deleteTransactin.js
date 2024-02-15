@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 const fetcher = async url => {
   const res = await fetch(url,{
-    method: 'Get',
+    method: 'Delete',
   })
  
   if (!res.ok) {
@@ -14,14 +14,10 @@ const fetcher = async url => {
   const data = await res.json()
   return data
 }
-function useUrlFetcher(url) {
-  const { data, error, isLoading } = useSWR(url , fetcher,{shouldRetryOnError: false})
+function useDeleteUrlFetcher(shouldFetch, url) {
 
-  
-  return {
-    fetchedData : data,
-    error,
-    isLoading
-  }
+  const { error,isLoading } = useSWR(() => shouldFetch ? url : null, fetcher,{shouldRetryOnError: false})
+
+  return {error,isLoading}
 }
-export default useUrlFetcher;
+export default useDeleteUrlFetcher;

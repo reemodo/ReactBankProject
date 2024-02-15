@@ -1,14 +1,22 @@
-import React from 'react'
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Operation.css';
-export function Operation({setBalance , balance }) {
+import usePostUrlFetcher from '../../Hooks/postTransaction';
+import MuiAlert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+export function Operation({ balance, handelSetBalance }) {
   const [transactionData, setTransactionData] = useState({
-    // Initialize your form fields here
     amount: 0,
     category: '',
     vendor: '',
-    type:''
+    type: ''
   });
+  const [snackbar,setSnackbar] = useState({
+    snackbarOpen: false,
+    snackbarSeverity: 'success',
+    snackbarMessage: ""
+  })
+ 
+  const [isClicked, setIsClicked] = useState(false);
 
   const handleChange = event => {
     const { name, value } = event.target;
@@ -17,63 +25,90 @@ export function Operation({setBalance , balance }) {
       [name]: value
     }));
   };
-  const handleSubmit = async event => {
-    event.preventDefault();
-    try {
-      if(transactionData.type === "withdraw" & balance+transactionData.amount * -1 < 0){
-        alert('You could not do this Transaction ');
-        return;
 
-      }
-      const response = await fetch('http://localhost:8000/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(transactionData)
-      });
-      if (!response.ok) {
-        throw new Error('Failed to submit form data');
-      }
-      // Handle successful response as needed
-      alert('Transaction added successfully');
-      setBalance( balance + (transactionData.type === "withdraw" ?transactionData.amount* -1:transactionData.amount*1 ))
-    } catch (error) {
-      console.error('Error submitting form data:', error);
+  const handelSubmit = async (event) => {
+    event.preventDefault();
+    const amount = transactionData.type === "withdraw" ? -transactionData.amount : transactionData.amount;
+    if (balance + amount < 0) {
+      setSnackbar({
+        snackbarOpen: true,
+        snackbarSeverity: 'error',
+        snackbarMessage: "You could not do this Transaction"
+      })
+    
+    } else {
+      setIsClicked(true);
     }
   };
+
+  const { error, isLoading } =  usePostUrlFetcher(isClicked, 'http://localhost:8000/transactions', transactionData);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (isClicked) {
+        if (error) {
+          setSnackbar({
+            snackbarOpen: true,
+            snackbarSeverity: 'error',
+            snackbarMessage: "Failed to submit Transaction"
+          })
+          setIsClicked(false);
+        }
+        if (isLoading) {
+          console.log('Loading...');
+        }
+        if (!error && !isLoading) {
+          setIsClicked(false);
+         const amount = parseInt(transactionData.type === "withdraw" ? -transactionData.amount : transactionData.amount);
+          handelSetBalance(balance + amount);
+          setSnackbar({
+            snackbarOpen: true,
+            snackbarSeverity: 'success',
+            snackbarMessage: "Operation done successfully"
+          })
+ 
+        }
+      }
+    };
+    fetchData();
+  }, [isClicked, transactionData,isLoading]);
+
   return (
-    <form onSubmit={handleSubmit} className='breakdownForm' title='BreakDown'>
+    <form onSubmit={handelSubmit} className='breakdownForm' title='BreakDown'>
       <div className='title'>Insert Transactions</div>
-        <input 
-          placeholder="Transaction Amount" 
-          type="text" 
-          name="amount" 
-          value={transactionData.amount==0?"":transactionData.amount} 
-          onChange={handleChange} 
-          className='textInput'
-        />
-        <input
-          placeholder="Transaction Vendor"
-          type="text"
-          name="vendor"
-          value={transactionData.vendor}
-          onChange={handleChange}
-          className='textInput'
-        />
-        <input
-          placeholder="Transaction Category"
-          type="text"
-          name="category"
-          value={transactionData.category}
-          onChange={handleChange}
-          className='textInput'
-        />
-     
+      <input
+        placeholder="Transaction Amount"
+        type="text"
+        name="amount"
+        value={transactionData.amount == 0 ? "" : transactionData.amount}
+        onChange={handleChange}
+        className='textInput'
+      />
+      <input
+        placeholder="Transaction Vendor"
+        type="text"
+        name="vendor"
+        value={transactionData.vendor}
+        onChange={handleChange}
+        className='textInput'
+      />
+      <input
+        placeholder="Transaction Category"
+        type="text"
+        name="category"
+        value={transactionData.category}
+        onChange={handleChange}
+        className='textInput'
+      />
       <div>
-      <button name="type" value='withdraw' className='withdrawButton' type="submit" onClick={handleChange}>Withdraw</button>
-      <button name="type" value='deposit' className='depositButton' type="submit" onClick={handleChange}>Deposit</button>
+        <button name="type" value='withdraw' className='withdrawButton' type="submit" onClick={handleChange}>Withdraw</button>
+        <button name="type" value='deposit' className='depositButton' type="submit" onClick={handleChange}>Deposit</button>
       </div>
+      <Snackbar open={snackbar.snackbarOpen} autoHideDuration={1000} onClose={() => setSnackbar({...snackbar,snackbarOpen:false}) }>
+        <MuiAlert elevation={6} variant="filled" onClose={() => setSnackbar({...snackbar,snackbarOpen:false}) }severity={snackbar.snackbarSeverity}>
+          {snackbar.snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
     </form>
+    
   );
 }

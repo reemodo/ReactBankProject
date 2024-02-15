@@ -1,45 +1,36 @@
 import React from 'react'
-import { useState, useEffect } from 'react';
-import  useUrlFetcher  from '../../Hooks/fetchTransactions';
-import { Spinner, Dropdown as Error } from 'flowbite-react';
-import './Breakdown.css'
-export function Breakdown(props) {
-   
-  
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //       try {
-    //         const response = await fetch('http://localhost:8000/transactions/categories');
-    //         if (!response.ok) {
-    //           throw new Error('Failed to fetch data');
-    //         }
-    //         const jsonData = await response.json();
-    //         setbreakdownCategories(jsonData);
-    //         setLoading(false);
-    //       } catch (error) {
-    //         console.error('Error fetching data:', error);
-    //         setLoading(false);
-    //       }
-    //     };
-    //     fetchData();
+import useUrlFetcher from '../../Hooks/fetchTransactions';
+import './Breakdown.css';
+import { Spinner } from 'flowbite-react';
+const fetcher = async url => {
+  const res = await fetch(url,{
+    method: 'Delete',
+  })
+ 
+  if (!res.ok) {
+    const error = new Error('An error occurred while fetching the data.')
+    error.info = await res.json()
+    error.status = res.status
+    throw error
+  }
+ 
+  return res.json()
+}
+export function Breakdown({ }) {
+    const { fetchedData, isError, isLoading } = useUrlFetcher('http://localhost:8000/transactions/categories')
 
-    //     // Cleanup function if needed
-    //     // return () => {
-    //     //   cleanup
-    //     // };
-    //   }, []); // Empty dependency array means this effect will only run once, similar to componentDidMount
-    const { fetchedData, isError, isLoading } = useUrlFetcher(true,'http://localhost:8000/transactions/categories')
-            
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error: {isError.message}</div>;
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error: {isError.message}</div>;
 
     return (
         <>
+            {isLoading ? <Spinner aria-label="Default status example" /> :
             <form className='breakdownContainer'>
                 <div className='title'>BreakDown</div>
-            {fetchedData.map(breakdown => <><div className='categoryContainer' key={breakdown._id}>{breakdown._id+":  "+  breakdown.totalAmount}</div></>)}
+                {fetchedData.map(breakdown => <div className='categoryContainer' key={breakdown._id}>{breakdown._id + ":  " + breakdown.totalAmount}</div>)}
             </form>
-            
+            }
+
         </>
     )
 }

@@ -3,40 +3,50 @@ import { useState, useEffect } from 'react';
 import { Spinner } from 'flowbite-react';
 import { Transaction } from './Transaction';
 import './Initial.css'
-export function Initial({}) {
-    const [transactions,setTransaction] = useState([])
-    const [loading, setLoading] = useState(true);
-    useEffect(() => {
-        const fetchData = async () => {
-          try {
-            const response = await fetch('http://localhost:8000/transactions');
-            if (!response.ok) {
-              throw new Error('Failed to fetch data');
-            }
-            const jsonData = await response.json();
-            setTransaction(jsonData);
-            setLoading(false);
-          } catch (error) {
-            console.error('Error fetching data:', error);
-            setLoading(false);
-          }
-        };
-        fetchData();
-
-        // Cleanup function if needed
-        // return () => {
-        //   cleanup
-        // };
-      }, []); // Empty dependency array means this effect will only run once, similar to componentDidMount
+import useUrlFetcher from '../../Hooks/fetchTransactions';
+import MuiAlert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+export function Initial() {
+  const [transactions, setTransactions] = useState([])
+  const [snackbar,setSnackbar] = useState({
+    snackbarOpen: false,
+    snackbarSeverity: 'success',
+    snackbarMessage: ""
+  })
+  const handleIsItemDeleted = (id) => {
+    setTransactions(transactions.filter(transaction => transaction._id !== id));
+      setSnackbar({
+        snackbarOpen: true,
+        snackbarSeverity: 'success',
+        snackbarMessage: "Transaction deleted successfully"
+      })
+  };
+  const { fetchedData, error, isLoading } = useUrlFetcher('http://localhost:8000/transactions')
+  useEffect(() => {
+    if(error){
+      setSnackbar({
+        snackbarOpen: true,
+        snackbarSeverity: 'error',
+        snackbarMessage: 'Failed to delete transaction'
+      })
+    }
     
+    if (fetchedData) {
+      setTransactions(fetchedData);
+    }
+  }, [fetchedData, isLoading]);
+  if (isLoading) return <Spinner aria-label="Default status example" />
 
-    return (
-        <>
-            {loading?<Spinner aria-label="Default status example" />:
-
-            transactions.map((transaction)=> 
-              <Transaction type={transaction.type} id={transaction._id} amount={transaction.amount} category={transaction.category} vendor={transaction.vendor} key={transaction._id}/>
-            )}
-        </>
-    )
+  return (
+    <>
+      {transactions.map((transaction) =>
+        <Transaction handleIsItemDeleted={handleIsItemDeleted} type={transaction.type} id={transaction._id} amount={transaction.amount} category={transaction.category} vendor={transaction.vendor} key={transaction._id} />
+      )}
+       <Snackbar open={snackbar.snackbarOpen} autoHideDuration={1000} onClose={() => setSnackbar({...snackbar,snackbarOpen:false}) }>
+        <MuiAlert elevation={6} variant="filled" onClose={() => setSnackbar({...snackbar,snackbarOpen:false}) }severity={snackbar.snackbarSeverity}>
+          {snackbar.snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
+    </>
+  )
 }

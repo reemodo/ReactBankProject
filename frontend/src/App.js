@@ -4,9 +4,15 @@ import { AppNavbar } from "./Components/AppNavbar/AppNavbar";
 import {Initial} from "./Components/InitialPage/Initial";
 import {Operation} from "./Components/OperationsPage/Operation";
 import {Breakdown} from "./Components/BreakdownPage/Breakdown";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 function App() {
   const [balance, setBalance] = useState(1380)
+  const handelSetBalance = (newBalance)=>{
+   
+    setBalance(newBalance)
+  }
+  
+  
   return (
     <Router>
       <div className="App">
@@ -14,7 +20,7 @@ function App() {
       </div>
       <Routes>
         <Route path="/" element={<Initial />} />
-        <Route path="/operations" element={<Operation balance={balance} setBalance={setBalance}/>} />
+        <Route path="/operations" element={<Operation balance={balance} handelSetBalance={handelSetBalance}/>} />
         <Route path="/breakdown" element={<Breakdown />} />
       </Routes>
     </Router>
